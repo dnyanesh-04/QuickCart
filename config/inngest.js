@@ -2,7 +2,8 @@ import { Inngest } from 'inngest';
 import connectDB from './db';
 import User from '@/models/user';
 
-export const inngest = new Inngest({ name: 'QuickCart' });
+export const inngest = new Inngest({ id: 'quickcart' });
+
 
 // Create user function (this part was missing)
 export const syncUserCreation = inngest.createFunction(
