@@ -7,43 +7,43 @@ export const inngest = new Inngest({ id: 'quickcart' });
 // Create user function
 export const syncUserCreation = inngest.createFunction(
   { id: 'create-user-with-clerk' },
-  { event: 'user.created' },  // ✅ updated
+  { event: 'clerk/user.created' },
   async ({ event }) => {
-    const { id, first_name, last_name, email_addresses, image_url } = event.data;
+    const user = event.data;
     const userData = {
-      id: id,  // Store Clerk user id separately
-      email: email_addresses[0].email_address,
-      name: `${first_name} ${last_name}`,
-      imageUrl: image_url,
+      id: user.id,
+      email: user.email_addresses?.[0]?.email_address,
+      name: `${user.first_name ?? ''} ${user.last_name ?? ''}`,
+      imageUrl: user.image_url,
     };
     await connectDB();
     await User.create(userData);
   }
 );
 
-// Update user
+// Update user function
 export const syncUserUpdation = inngest.createFunction(
   { id: 'update-user-with-clerk' },
-  { event: 'user.updated' },  // ✅ updated
+  { event: 'clerk/user.updated' },
   async ({ event }) => {
-    const { id, first_name, last_name, email_addresses, image_url } = event.data;
+    const user = event.data;
     const userData = {
-      email: email_addresses[0].email_address,
-      name: `${first_name} ${last_name}`,
-      imageUrl: image_url,
+      email: user.email_addresses?.[0]?.email_address,
+      name: `${user.first_name ?? ''} ${user.last_name ?? ''}`,
+      imageUrl: user.image_url,
     };
     await connectDB();
-    await User.findOneAndUpdate({ id: id }, userData);
+    await User.findOneAndUpdate({ id: user.id }, userData);
   }
 );
 
-// Delete user
+// Delete user function
 export const syncUserDeletion = inngest.createFunction(
   { id: 'delete-user-with-clerk' },
-  { event: 'user.deleted' },  // ✅ updated
+  { event: 'clerk/user.deleted' },
   async ({ event }) => {
-    const { id } = event.data;
+    const user = event.data;
     await connectDB();
-    await User.findOneAndDelete({ id: id });
+    await User.findOneAndDelete({ id: user.id });
   }
 );
