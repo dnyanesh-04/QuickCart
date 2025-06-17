@@ -1,15 +1,21 @@
 'use client'
+import axios from "axios";
 import { assets } from "@/assets/assets";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import { useState } from "react";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
+
 
 const AddAddress = () => {
 
+  const{getToken, router} = useAppContext();
+
     const [address, setAddress] = useState({
         fullName: '',
-        phoneNumber: '',
+        phone: '',
         pincode: '',
         area: '',
         city: '',
@@ -17,9 +23,38 @@ const AddAddress = () => {
     })
 
     const onSubmitHandler = async (e) => {
-        e.preventDefault();
+  e.preventDefault();
 
+  try {
+    const token = await getToken();
+
+    if (!token) {
+      toast.error("User not authenticated");
+      return;
     }
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    console.log("token:", token);
+    console.log("address:", address);
+    console.log("headers:", headers);
+
+    const { data } = await axios.post('/api/user/add-address', { address }, { headers });
+
+    if (data.success) {
+      toast.success(data.message);
+      router.push('/cart');
+    } else {
+      toast.error(data.message);
+    }
+  } catch (error) {
+    console.error("Error saving address:", error);
+    toast.error(error.message || "Something went wrong");
+  }
+};
+
 
     return (
         <>
@@ -41,7 +76,7 @@ const AddAddress = () => {
                             className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
                             type="text"
                             placeholder="Phone number"
-                            onChange={(e) => setAddress({ ...address, phoneNumber: e.target.value })}
+                            onChange={(e) => setAddress({ ...address, phone: e.target.value })}
                             value={address.phoneNumber}
                         />
                         <input

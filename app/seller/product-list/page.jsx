@@ -1,26 +1,48 @@
 'use client'
+import axios from "axios";
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from "react";
 import { assets, productsDummyData } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
+import toast from "react-hot-toast";
+import connectDB from "@/config/db";
+
+  
 
 const ProductList = () => {
 
-  const { router } = useAppContext()
+  const { router, getToken, user } = useAppContext()
 
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchSellerProduct = async () => {
-    setProducts(productsDummyData)
-    setLoading(false)
+    try {
+      const token = await getToken();
+      const { data } = await axios.get('/api/product/seller-list', {
+
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setProducts(data.products);
+        setLoading(false);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
-    fetchSellerProduct();
-  }, [])
+    if (user) {
+      fetchSellerProduct();
+    }
+  }, [user])
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -32,9 +54,7 @@ const ProductList = () => {
               <tr>
                 <th className="w-2/3 md:w-2/5 px-4 py-3 font-medium truncate">Product</th>
                 <th className="px-4 py-3 font-medium truncate max-sm:hidden">Category</th>
-                <th className="px-4 py-3 font-medium truncate">
-                  Price
-                </th>
+                <th className="px-4 py-3 font-medium truncate">Price</th>
                 <th className="px-4 py-3 font-medium truncate max-sm:hidden">Action</th>
               </tr>
             </thead>
