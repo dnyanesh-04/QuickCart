@@ -1,6 +1,6 @@
 import connectDB from "@/config/db";
 import { getAuth } from "@clerk/next.js/server";
-import User from "@/models/User";
+import User from '../models/User.js';
 import { NextResponse } from "next/server";
 
 

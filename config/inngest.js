@@ -1,6 +1,6 @@
 import { Inngest } from 'inngest';
-import connectDB from './db';
-import User from '@/models/User';
+import connectDB from 'config/db';
+import User from '../models/User.js';
 import Order from '@/models/Order';
 
 export const inngest = new Inngest({ id: "quickkcart-next" });
