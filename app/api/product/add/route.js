@@ -15,16 +15,16 @@ export async function POST(request) {
   try {
     const { userId } = getAuth(request);
 
-    const isSeller = await authSeller(userId);
+    const isSeller = await authSeller(userId); // Ensure the user is a seller
 
     if (!isSeller) {
       return new Response(
-        JSON.stringify({ success: false, message: 'Unauthorized' }),
+        JSON.stringify({ success: false, message: 'Unauthorized' }), 
         { status: 403 }
       );
     }
 
-    const formData = await request.formData();
+    const formData = await request.formData(); // Use formData to handle file uploads
 
     const name = formData.get('name');
     const description = formData.get('description');
@@ -37,10 +37,10 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'No files uploaded' });
     }
 
-    const result = await Promise.all(
-      files.map(async (file) => {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+    const result = await Promise.all( //  Process each file upload
+      files.map(async (file) => { // file can be a Blob or File object
+        const arrayBuffer = await file.arrayBuffer(); // Convert file to ArrayBuffer
+        const buffer = Buffer.from(arrayBuffer); // Convert ArrayBuffer to Buffer
 
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(

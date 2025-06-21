@@ -1,19 +1,17 @@
 import connectDB from "@/config/db";
 import { getAuth } from "@clerk/nextjs/server";
-import User from '../models/User.js';
+import User from '@/models/User';
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
-  try {
-    const auth = getAuth(request);
-    const userId = auth.userId;
-
-    if (!userId) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+  try { 
+    // Get the userId from the request's authentication context
+    const { userId } = getAuth(request);
+    if (!userId) return NextResponse.json({ success: false, message: "Unauthorized" });
 
     await connectDB();
-    const user = await User.findOne({ id: userId });
+    // Find the user by userId
+    const user = await User.findById(userId);
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" });

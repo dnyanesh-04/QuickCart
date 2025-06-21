@@ -6,8 +6,10 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
 
+//Declares the Cart component
 const Cart = () => {
 
+ //Fetch required global values and functions from context
   const { products, router, cartItems, addToCart, updateCartQuantity, getCartCount } = useAppContext();
 
   return (
@@ -40,7 +42,7 @@ const Cart = () => {
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(cartItems).map((itemId) => {
+             {Object.keys(cartItems).map((itemId) => { // get all the keys of the cartItems object and loop over each item ID 
                   const product = products.find(product => product._id === itemId);
 
                   if (!product || cartItems[itemId] <= 0) return null;

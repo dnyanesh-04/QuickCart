@@ -9,7 +9,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 
-const Home = () => {
+
+const Home = () => { // Main component for the home page
+
   return (
     <>
       <Navbar/>

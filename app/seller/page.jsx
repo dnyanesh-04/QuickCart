@@ -5,14 +5,11 @@ import Image from "next/image";
 import { useAppContext } from "context/AppContext";
 import toast from "react-hot-toast";
 import axios from "axios";
-import connectDB from "@/config/db";  
+  
 
+const AddProduct = () => { // This component allows sellers to add new products
 
-
-
-const AddProduct = () => {
-
-  const { getToken } = useAppContext();
+  const { getToken } = useAppContext(); //
 
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
@@ -21,8 +18,8 @@ const AddProduct = () => {
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => { // Function to handle form submission
+  e.preventDefault(); // Prevent the default form submission behavior
 
     const formData = new FormData();
 
@@ -32,7 +29,7 @@ const AddProduct = () => {
     formData.append('price', price);
     formData.append('offerPrice', offerPrice);
    
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < files.length; i++) { // Loop through the files array and append each file to the FormData object
         formData.append('images', files[i]);
       }
 
@@ -48,8 +45,8 @@ const AddProduct = () => {
         toast.success(data.message);
         setFiles([]);
         setName('');
-        setDescription('');
-        setCategory('Earphone');
+        setDescription(''); 
+        setCategory('');
         setPrice('');
         setOfferPrice('');
       } else {
@@ -96,7 +93,7 @@ const AddProduct = () => {
             type="text"
             placeholder="Type here"
             className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}  // Event handler
             value={name}
             required
           />

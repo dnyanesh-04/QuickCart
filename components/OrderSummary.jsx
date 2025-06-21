@@ -1,59 +1,116 @@
+'use client';
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
-const OrderSummary = () => {
+const OrderSummary = () => { 
+  const {
+    currency,
+    getCartCount,
+    getCartAmount,
+    getToken,
+    user,
+    cartItems,
+    setCartItems,
+  } = useAppContext();
 
-  const { currency, router, getCartCount, getCartAmount, getToken, user, cartItems, setcartItems } = useAppContext()
-  const [selectedAddress, setSelectedAddress] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter(); // Router for page navigation
 
-  const [userAddresses, setUserAddresses] = useState([]);
 
+  const [selectedAddress, setSelectedAddress] = useState(null); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown visibilit
+  const [userAddresses, setUserAddresses] = useState([]); // State to hold user addresses
+
+
+  // Function to fetch user addresses from the API
   const fetchUserAddresses = async () => {
-  try{
+    try {
+      const token = await getToken(); //
+      const { data } = await axios.get("/api/user/get-address", { 
+        headers: { Authorization: `Bearer ${token}` }, 
+      });
 
-    const token = await getToken();
-    const {data} = await axios.get('/api/user/get-address', { headers: { Authorization: `Bearer ${token}` } });
-    if (data.success) {
-      setUserAddresses(data.addresses);
-      if (data.addresses.length > 0) {
-        setSelectedAddress(data.addresses[0]);
+      if (data.success) {
+        const addresses = data.addresses || []; 
+        setUserAddresses(addresses);
+        if (addresses.length > 0) setSelectedAddress(addresses[0]); // Set the first address as selected by default
+      } else {
+        toast.error(data.message);
       }
-    } else {
-      toast.error(data.message);
+    } catch (error) {
+      toast.error("Error fetching addresses");
+      console.error(" Address fetch error:", error);
     }
-  } catch (error) {
-    toast.error(error.message);
+  };
 
-  }
-
-  }
-  
-
+  // Function to handle address selection from the dropdown
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
     setIsDropdownOpen(false);
   };
 
   const createOrder = async () => {
+    try {
+      if (!selectedAddress) return toast.error("Please select an address");
 
-  }
+     // Convert cart items object to an array of objects with product and quantity
+      let cartItemsArray = Object.keys(cartItems).map((key) => ({
+        product: key,
+        quantity: cartItems[key],
+      }));
 
-  useEffect(() => {
-    if (user) {
-    fetchUserAddresses();
+      // Filter out items with quantity 0
+      cartItemsArray = cartItemsArray.filter((item) => item.quantity > 0);
+      if (cartItemsArray.length === 0) return toast.error("Your cart is empty");
+
+      const token = await getToken();
+      const response = await axios.post(
+        "/api/order/create",
+        {
+          address: selectedAddress._id,
+          items: cartItemsArray,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = response.data; // Get the response data
+      console.log("Order API Response:", response.status, data); // Log the response for debugging
+
+      if (response.status === 200 && data.success) {
+        toast.success("Order placed successfully");
+        setCartItems({});
+
+        //Redirect after 1 second
+        setTimeout(() => {
+          router.push("/my-orders");
+        }, 1000);
+      } else {
+        toast.error("Order failed");
+        console.error("Order failed response:", data);
+      }
+    } catch (error) {
+      toast.error("Order failed");
+      console.error("Order creation error:", error);
     }
-  }, [user])
+  };
+
+
+   // Fetch addresses on component mount if user is logged in
+  useEffect(() => {
+    if (user) fetchUserAddresses();
+  }, [user]);
 
   return (
     <div className="w-full md:w-96 bg-gray-500/5 p-5">
-      <h2 className="text-xl md:text-2xl font-medium text-gray-700">
-        Order Summary
-      </h2>
+      <h2 className="text-xl md:text-2xl font-medium text-gray-700">Order Summary</h2>
       <hr className="border-gray-500/30 my-5" />
+
       <div className="space-y-6">
+        {/* Address */}
         <div>
           <label className="text-base font-medium uppercase text-gray-600 block mb-2">
             Select Address
@@ -68,8 +125,14 @@ const OrderSummary = () => {
                   ? `${selectedAddress.fullName}, ${selectedAddress.area}, ${selectedAddress.city}, ${selectedAddress.state}`
                   : "Select Address"}
               </span>
-              <svg className={`w-5 h-5 inline float-right transition-transform duration-200 ${isDropdownOpen ? "rotate-0" : "-rotate-90"}`}
-                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#6B7280"
+              <svg
+                className={`w-5 h-5 inline float-right transition-transform duration-200 ${
+                  isDropdownOpen ? "rotate-0" : "-rotate-90"
+                }`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="#6B7280"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -97,6 +160,7 @@ const OrderSummary = () => {
           </div>
         </div>
 
+        {/* Promo Code */}
         <div>
           <label className="text-base font-medium uppercase text-gray-600 block mb-2">
             Promo Code
@@ -107,14 +171,13 @@ const OrderSummary = () => {
               placeholder="Enter promo code"
               className="flex-grow w-full outline-none p-2.5 text-gray-600 border"
             />
-            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">
-              Apply
-            </button>
+            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">Apply</button>
           </div>
         </div>
 
         <hr className="border-gray-500/30 my-5" />
 
+        {/* Totals */}
         <div className="space-y-4">
           <div className="flex justify-between text-base font-medium">
             <p className="uppercase text-gray-600">Items {getCartCount()}</p>
@@ -126,16 +189,24 @@ const OrderSummary = () => {
           </div>
           <div className="flex justify-between">
             <p className="text-gray-600">Tax (2%)</p>
-            <p className="font-medium text-gray-800">{currency}{Math.floor(getCartAmount() * 0.02)}</p>
+            <p className="font-medium text-gray-800">
+              {currency}{Math.floor(getCartAmount() * 0.02)}
+            </p>
           </div>
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
-            <p>{currency}{getCartAmount() + Math.floor(getCartAmount() * 0.02)}</p>
+            <p>
+              {currency}
+              {getCartAmount() + Math.floor(getCartAmount() * 0.02)}
+            </p>
           </div>
         </div>
       </div>
 
-      <button onClick={createOrder} className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700">
+      <button
+        onClick={createOrder}
+        className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700"
+      >
         Place Order
       </button>
     </div>

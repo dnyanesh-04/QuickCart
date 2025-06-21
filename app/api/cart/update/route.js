@@ -1,24 +1,26 @@
+import connectDB from "@/config/db";
+import User from "@/models/User";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-
-
 export async function POST(request) {
-    try{
+    try {
+        const { userId } = getAuth(request); //
+        const { cartData } = await request.json(); // Extract cartData from the request body
 
-        const{userId} = getAuth(request);
+        console.log("cartData received:", cartData); // Log the cartData to verify its structure
 
-        const {cartData} = await request.json();
 
         await connectDB();
         const user = await User.findById(userId);
+        if (!user) return NextResponse.json({ success: false, message: "User not found" });
 
         user.cartItems = cartData;
         await user.save();
-        
-        return NextResponse.json({ success: true})
-            
-        }catch(error) {
-          return  NextResponse.json({ success: false, message: error.message });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error in cart/update:", error);
+        return NextResponse.json({ success: false, message: error.message });
     }
 }

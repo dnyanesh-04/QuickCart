@@ -1,26 +1,45 @@
 'use client';
 import React, { useEffect, useState } from "react";
-import { assets, orderDummyData } from "@/assets/assets";
+import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/seller/Footer";
 import Loading from "@/components/Loading";
+import toast from "react-hot-toast";
+
 
 const Orders = () => {
 
-    const { currency } = useAppContext();
+    const { currency, getToken, user } = useAppContext(); // Fetch required global values and functions from context
 
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    const fetchSellerOrders = async () => {
-        setOrders(orderDummyData);
-        setLoading(false);
-    }
+    const [orders, setOrders] = useState([]); // State to hold the orders fetched from the API
+    const [loading, setLoading] = useState(true); // State to manage loading state
 
-    useEffect(() => {
-        fetchSellerOrders();
-    }, []);
+    const fetchSellerOrders = async () => { // Function to fetch seller orders from the API
+        try {
+            const token = await getToken(); //
+
+            const{ data } = await axios.get('/api/order/seller-orders', {headers: { Authorization: `Bearer ${token}` }});
+      
+            if(data.success) {
+                setOrders(data.orders.reverse()); 
+                setLoading(false);
+
+            } else {
+                toast.error(data.message); // Show error message if the fetch was not successful
+            }
+       
+        } catch (error) {
+            toast.error(error.message); // Handle any errors that occur during the fetch
+        }     
+}
+
+    useEffect(() => { // Effect to fetch seller orders when the component mounts or when the user changes
+        if (user) { 
+     fetchSellerOrders(); 
+        }
+    }, [user]); // Fetch orders when the user changes
 
     return (
         <div className="flex-1 h-screen overflow-scroll flex flex-col justify-between text-sm">

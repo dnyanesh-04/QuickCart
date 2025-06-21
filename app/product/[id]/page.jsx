@@ -12,21 +12,21 @@ import React from "react";
 
 const Product = () => {
 
-    const { id } = useParams();
+    const { id } = useParams(); // Get the product ID from the URL parameters
 
-    const { products, router, addToCart } = useAppContext()
+    const { products, router, addToCart } = useAppContext() // Fetch required global values and functions from context
 
-    const [mainImage, setMainImage] = useState(null);
-    const [productData, setProductData] = useState(null);
+    const [mainImage, setMainImage] = useState(null); // State to hold the main image of the product
+    const [productData, setProductData] = useState(null); // State to hold the product data
 
-    const fetchProductData = async () => {
-        const product = products.find(product => product._id === id);
+    const fetchProductData = async () => { 
+        const product = products.find(product => product._id === id); // Find the product in the products array using the ID from the URL
         setProductData(product);
     }
 
-    useEffect(() => {
-        fetchProductData();
-    }, [id, products.length])
+    useEffect(() => {   // Effect to fetch product data when the component mounts or when the products array changes
+        fetchProductData(); // Call the function to fetch product data
+    }, [id, products.length]) 
 
     return productData ? (<>
         <Navbar />

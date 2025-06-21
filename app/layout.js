@@ -1,27 +1,21 @@
-import { Outfit } from "next/font/google";
-import "./globals.css";
-import { AppContextProvider } from "@/context/AppContext";
-import { Toaster } from "react-hot-toast";
-import { ClerkProvider } from "@clerk/nextjs";
+'use client';
 
-const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
+import './globals.css';
+import { ClerkProvider } from '@clerk/nextjs';
+import AppProvider from '@/context/AppContext';
+import { Toaster } from 'react-hot-toast'; 
 
-export const metadata = {
-  title: "QuickCart - GreatStack",
-  description: "E-Commerce with Next.js ",
-};
-
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }) { //
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={`${outfit.className} antialiased text-gray-700`} >
-          <Toaster />
-          <AppContextProvider>
+      <AppProvider>
+        <html lang="en">
+          <body>
+            <Toaster position="top-center" /> 
             {children}
-          </AppContextProvider>
-        </body>
-      </html>
-      </ClerkProvider>
+          </body>
+        </html>
+      </AppProvider>
+    </ClerkProvider>
   );
 }

@@ -1,13 +1,15 @@
-// app/api/product/list/route.js
-import { NextResponse } from "next/server";
 import connectDB from "@/config/db";
 import Product from "@/models/Product";
+import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    await connectDB();
-    const products = await Product.find(); // Get all products
-    return NextResponse.json({ success: true, products });
+    await connectDB(); 
+
+    const products = await Product.find(); // Fetch all products
+
+    return NextResponse.json(products); // Return product array directly
+
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message });
   }
